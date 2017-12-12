@@ -9,14 +9,14 @@
 #include <math.h>
 #include <SharpIR.h>
 
-#define motorLeftB 5;
-#define motorRightB 6;
-#define motorLeftF 10;
-#define motorRightF 11;
-#define turnTimeLeft 100;
-#define turnTimeRight 100;
+#define motorLeftB 5
+#define motorRightB 6
+#define motorLeftF 10
+#define motorRightF 11
+#define turnTimeLeft 100
+#define turnTimeRight 100
 
-#define irPin A0;
+#define irPin A0
 
 ///NOTE! I know that this is a terrible way to use classes, but I do it for the sake of saving time, and because the classes in this case are pretty simple.
 class positionr{ //creating a class for the position so that it is easier to work with it
@@ -56,6 +56,11 @@ Adafruit_GPS GPS(&mySerial); //Initializing GPS objext
 
 
 void setup() {
+  pinMode(motorLeftF, OUTPUT);
+  pinMode(motorRightF, OUTPUT);
+  pinMode(motorLeftB, OUTPUT);
+  pinMode(motorRightB, OUTPUT);
+  pinMode(irPin, INPUT);
   Serial.begin(115200); //This baud rate is higher, so that it is sure that it will be able to read from the GPS
   GPS.begin(9600); //Turns on the gommunication between GPS and arduino
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY); //telling the GPS to send only the RMC NMEA sentences, since the only thing we need is possition
