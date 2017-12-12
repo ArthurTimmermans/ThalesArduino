@@ -7,6 +7,16 @@
 #include <SoftwareSerial.h>
 #include <Stepper.h>
 #include <math.h>
+#include <SharpIR.h>
+
+#define motorLeftB 5;
+#define motorRightB 6;
+#define motorLeftF 10;
+#define motorRightF 11;
+#define turnTimeLeft 100;
+#define turnTimeRight 100;
+
+#define irPin A0;
 
 ///NOTE! I know that this is a terrible way to use classes, but I do it for the sake of saving time, and because the classes in this case are pretty simple.
 class positionr{ //creating a class for the position so that it is easier to work with it
@@ -71,6 +81,7 @@ void loop() {
         /*
          * there is an obstacle that has to be surrounded
          */
+         left(turnTimeLeft);
       }
     }
     else{
