@@ -6,16 +6,15 @@
 #include <Adafruit_GPS.h>
 #include <SoftwareSerial.h>
 #include <Stepper.h>
-#include <math.h>
 #include <SharpIR.h>
 
-#define motorLeftB 5
-#define motorRightB 6
-#define motorLeftF 10
-#define motorRightF 11
-#define turnTimeLeft 100
-#define turnTimeRight 100
-
+#define motorLeftB 4 //if this is high and motorLeftF is low the motor moves backward
+#define motorRightB 7 //if this is high and motorRightF is low the motor moves backward
+#define motorLeftF 8 //if this is high and motorLeftB is low the motor moves forward
+#define motorRightF 9 //if this is high and motorRightB is low the motor moves forward
+#define motorSpeed 5 //PWM signal that will control the speed of the motors. We need one, that will be duplicated, because the motors will move symetrically 
+#define turnTimeLeft 100 //
+#define turnTimeRight 100 //
 #define irPin A0
 
 ///NOTE! I know that this is a terrible way to use classes, but I do it for the sake of saving time, and because the classes in this case are pretty simple.
@@ -36,104 +35,64 @@ class positionr{ //creating a class for the position so that it is easier to wor
 /*
  * Function declaration
  */
-void alignPos(double &orientationAngle, int &stepLeft, int &stepRight); //moves the robot so that it points straight to the destination, also updates the value of the orientation angle
-bool checkForObstacle(); //checks if there are obstacles up to 80 cm in front of the robot
-void updateOrientation(double &orientationAngle);//only updates the information for the orientation angle
-void straight(float meters);//moves the robot forward
+void stopMotor(); 
+void left(int x);
+void right(int x);
+void forward(int x);
+void backward(int x);
+void IRdistance();
+bool isDirectionRight();
+float distanceMeDes();
+positionr GPS_position(); //returns the current position
+
 /*
  * variables and object declaration
  */
-int stepsPerRevolution=100, radiusTire=0.03; //ENTER HERE THE STEPS PER REVOLUTION, and the radius of the Tire
-Stepper rightStepper(stepsPerRevolution, 8, 9);
-Stepper leftStepper(stepsPerRevolution, 10, 11);
-int stepCountRight=0, stepCountLeft=0;
-positionr initialposition, myposition, destination; //for use in the main
+
+positionr myposition, destination; //for use in the main
 bool grabStatus=false;
-const double pi=3.14159265;
-double orientationAngle=pi/2, destinationAngle; //these are used to keep track of the orientation of the robot
 SoftwareSerial mySerial(3,2); //Setting new TTL serial communication 3-Rx 2-Tx
 Adafruit_GPS GPS(&mySerial); //Initializing GPS objext
-
+int speedm=0;
+float distanceMeDesI, distanceMeDesF; //used to measure if the robot is going in the right direction 
 
 void setup() {
-  pinMode(motorLeftF, OUTPUT);
-  pinMode(motorRightF, OUTPUT);
-  pinMode(motorLeftB, OUTPUT);
-  pinMode(motorRightB, OUTPUT);
-  pinMode(irPin, INPUT);
-  Serial.begin(115200); //This baud rate is higher, so that it is sure that it will be able to read from the GPS
+  Serial.begin(115200); //This baud rate is higher, so that it is sure that it will be able to read from the GPS; not sure if we need this serial though
   GPS.begin(9600); //Turns on the gommunication between GPS and arduino
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY); //telling the GPS to send only the RMC NMEA sentences, since the only thing we need is possition
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // the NMEA sentences are updated 1 time per sec
   delay(1000); //gives a some time to the GPS to figure the new commands
-  initialposition=GPS_position();
+  myposition=GPS_position();
+  pinMode(motorLeftB, OUTPUT);
+  pinMode(motorLeftF, OUTPUT);
+  pinMode(motorRightB, OUTPUT);
+  pinMode(motorRightF, OUTPUT);
+  pinMode(motorSpeed, OUTPUT);
   //here we have to define the destination
   //destination.set_longitude(longitude);
   //destination.set_latitude(latitude);
-  destinationAngle=atan(destination.get_longitude()/destination.get_latitude());
 }
 
 void loop() {
-  myposition=GPS_position();
-  if(!grabStatus){
-    if(!(myposition==destination)){ //using !(xx==xx) instead of xx!=xx, so that I don't have to overload another operator in the class
-      alignPos(); 
-      if(!checkForObstacle()){
-        straight(0.5);
-        updateOrientation(); 
-      }
-      else{
-        /*
-         * there is an obstacle that has to be surrounded
-         */
-         left(turnTimeLeft);
-      }
-    }
-    else{
-    /*
-     * The destination is riched and now the robot has to grab the thing and bring it back
-     * change grabStatus
-     */
-     grabStatus=true;
-   }
+ if(!(myposition==destination)){
+  //if the robot is not at the destination
+  distanceMeDesI=distanceMeDes();
+  forward(500);
+  while(!isDirectionRight()){
+    //the robot doesn't go in the right direction
+    distanceMeDesI=distanceMeDes();
+    left(100); 
+    forward(500);
   }
-   else{
-    /* 
-     *  Will come here if grabStatus is true and now the robot has to come back to initial destination
-     */
-  }
-}
-/*
- * Functions definition
- */
-positionr GPS_position(){ //a function which returns the current positionr
-  positionr current_position; //creating object that will be returned
-    bool t=false; //used to test for successfull parsing; 
-    while(!t){
-      if(GPS.newNMEAreceived()) {
-       if(GPS.parse(GPS.lastNMEA())){ //checking if parsing has been successful
-        t=true;
-        current_position.set_longitude(GPS.longitude); //asssigning the current positionr to the object
-        current_position.set_latitude(GPS.latitude); //asssigning the current positionr to the object
-       }
-      } 
-    }
-    return current_position;
+ }
+ else{
+  //if the robot is at the destination
+  //has to grab the thing
+  //in the test scenario I make him go round so that we know when the robot thinks that he is at the code. 
+  left(5000);
+  exit(0);
+  //end of test scenario
+ }
 }
 
-void alignPos(){
-  while(abs(orientationAngle-destinationAngle)>(pi/180)){
-    //the program comes here if the robot is not aligned properly
-    //have to think of an idea to run motors in parallel
-  }
-  return;
-}
-bool checkForObstacle(){
-  
-}
-void updateOrientation(){
-  
-}
-void straight(float meters){
-  
-}
+

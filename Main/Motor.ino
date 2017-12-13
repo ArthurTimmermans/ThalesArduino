@@ -1,39 +1,58 @@
 void stopMotor(){
-  analogWrite(motorLeftF, 0);
-  analogWrite(motorRightF, 0);
-  analogWrite(motorLeftB,0);
-  analogWrite(motorRightB, 0);
+    analogWrite(motorSpeed, 0);
+    digitalWrite(motorLeftF, LOW); 
+    digitalWrite(motorLeftB, LOW); 
+    digitalWrite(motorRightF, LOW);
+    digitalWrite(motorRightB, LOW);
 }
 void left(int x){
-  analogWrite(motorLeftF, 255);
-  analogWrite(motorRightF, 0);
-  analogWrite(motorLeftB, 0);
-  analogWrite(motorRightB, 255);
+  digitalWrite(motorLeftF, LOW); 
+  digitalWrite(motorLeftB, HIGH); 
+  digitalWrite(motorRightF, HIGH);
+  digitalWrite(motorRightB, LOW);
+  for(speedm=0; speedm<=255; speedm+=5){
+    analogWrite(motorSpeed, speedm);
+  }
   delay(x);
   stopMotor();
 }
 void right(int x){
-  analogWrite(motorLeftF, 0);
-  analogWrite(motorRightF, 255);
-  analogWrite(motorLeftB, 255);
-  analogWrite(motorRightB, 0);
+  digitalWrite(motorLeftF, HIGH); 
+  digitalWrite(motorLeftB, LOW); 
+  digitalWrite(motorRightF, LOW);
+  digitalWrite(motorRightB, HIGH);
+  for(speedm=0; speedm<=255; speedm+=5){
+    analogWrite(motorSpeed, speedm);
+  }
   delay(x);
   stopMotor();
 }
 void forward(int x){
-  analogWrite(motorLeftF, 255);
-  analogWrite(motorRightF, 255);
-  analogWrite(motorLeftB, 0);
-  analogWrite(motorRightB, 0);
+  digitalWrite(motorLeftF, HIGH); 
+  digitalWrite(motorLeftB, LOW); 
+  digitalWrite(motorRightF, HIGH);
+  digitalWrite(motorRightB, LOW);
+  for(speedm=0; speedm<=255; speedm+=5){
+    analogWrite(motorSpeed, speedm);
+  }
   delay(x);
   stopMotor();
 }
 void backward(int x){
-  analogWrite(motorLeftF, 0);
-  analogWrite(motorRightF, 0);
-  analogWrite(motorLeftB, 255);
-  analogWrite(motorRightB, 255);
+  digitalWrite(motorLeftF, LOW); 
+  digitalWrite(motorLeftB, HIGH); 
+  digitalWrite(motorRightF, LOW);
+  digitalWrite(motorRightB, HIGH);
+  for(speedm=0; speedm<=255; speedm+=5){
+    analogWrite(motorSpeed, speedm);
+  }
   delay(x);
   stopMotor();
+}
+
+bool isDirectionRight(){
+  distanceMeDesF=distanceMeDes();
+  if(distanceMeDesI<distanceMeDesF) return false;
+  if(distanceMeDesI>=distanceMeDesF) return true;
 }
 
